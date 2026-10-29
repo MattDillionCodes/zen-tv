@@ -1,0 +1,19 @@
+# Build output. Gradle writes to build.nosync/ so iCloud-synced folders leave it alone (see build.gradle.kts).
+build/
+build.nosync/
+.gradle/
+.kotlin/
+
+# Machine-specific and secret
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+
+# Development captures; curated images live in docs/images/
+screenshots/

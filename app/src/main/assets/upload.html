@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zen · Wallpaper</title>
+<style>
+  :root { color-scheme: dark; --accent: #ffffff; --muted: #9c9ca8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: #0b0b10; color: #fff;
+         font: 16px/1.5 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 48px 20px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; border: 1px solid #3a3a42;
+           color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+  h1 { font-size: 40px; margin: 12px 0 4px; letter-spacing: -1px; }
+  p { color: var(--muted); margin: 0 0 24px; }
+  .btn { display: block; text-align: center; padding: 16px; border-radius: 999px; background: var(--accent);
+         color: #0b0b10; font-weight: 700; font-size: 18px; cursor: pointer; }
+  canvas { display: none; width: 100%; margin-top: 24px; border-radius: 14px; border: 1px solid #222; }
+  #s { margin-top: 16px; text-align: center; color: #fff; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<main>
+  <span class="badge">ZEN</span>
+  <h1>New wallpaper</h1>
+  <p>Pick a photo. It's cropped to fit your TV and sent straight to it. It never leaves your Wi-Fi.</p>
+  <label class="btn">Choose photo<input type="file" id="f" accept="image/*" hidden></label>
+  <canvas id="c" width="1920" height="1080"></canvas>
+  <div id="s"></div>
+</main>
+<script>
+  const TOKEN = "{{TOKEN}}";
+  const f = document.getElementById("f"), c = document.getElementById("c"), s = document.getElementById("s");
+  f.onchange = async () => {
+    const file = f.files[0];
+    if (!file) return;
+    s.textContent = "Preparing…";
+    const img = await createImageBitmap(file, { imageOrientation: "from-image" }).catch(() => null);
+    if (!img) { s.textContent = "That file isn't an image this browser can read."; return; }
+    // Center-crop to 16:9 so the TV never has to resize anything.
+    const ctx = c.getContext("2d");
+    const k = Math.max(c.width / img.width, c.height / img.height);
+    const w = img.width * k, h = img.height * k;
+    ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h);
+    c.style.display = "block";
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.9));
+    s.textContent = "Sending to your TV…";
+    try {
+      const r = await fetch("/upload?t=" + TOKEN, { method: "POST", headers: { "Content-Type": "image/jpeg" }, body: blob });
+      s.textContent = r.ok ? "Done. Look at your TV ✨" : "Upload failed: " + (await r.text());
+    } catch (e) {
+      s.textContent = "Couldn't reach the TV. Is your phone on the same Wi-Fi?";
+    }
+  };
+</script>
+</body>
+</html>
