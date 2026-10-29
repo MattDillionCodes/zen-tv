@@ -13,12 +13,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -38,7 +39,12 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -80,6 +86,7 @@ fun ZenHome(
     var lastInteraction by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var infoLineRight by remember { mutableFloatStateOf(0f) }
     var clockBounds by remember { mutableStateOf(Rect.Zero) }
+    var listBounds by remember { mutableStateOf(Rect.Zero) }
     // Coming back to Zen counts as attention, so a pet that dozed off while you were away wakes up and greets you.
     LaunchedEffect(greet) { lastInteraction = System.currentTimeMillis() }
 
@@ -101,12 +108,20 @@ fun ZenHome(
             }
         }
 
-        Column(Modifier.padding(start = 180.dp, top = 110.dp)) {
+        Column(Modifier.fillMaxHeight().padding(start = 180.dp, top = 110.dp, bottom = 40.dp)) {
             Clock(prefs.use24h, Modifier.onGloballyPositioned { clockBounds = it.boundsInRoot() })
             Spacer(Modifier.height(4.dp))
             InfoLine(prefs, Modifier.onGloballyPositioned { infoLineRight = it.boundsInRoot().right })
             Spacer(Modifier.height(44.dp))
-            Column(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState())) {
+            // Takes whatever height is left under the clock (TVs with many apps scroll), fading at the edges.
+            val listScroll = rememberScrollState()
+            Column(
+                Modifier
+                    .weight(1f, fill = false)
+                    .onGloballyPositioned { listBounds = it.boundsInRoot() }
+                    .fadeEdges(listScroll)
+                    .verticalScroll(listScroll),
+            ) {
                 visible.forEachIndexed { i, app ->
                     AppRow(
                         label = app.label,
@@ -148,10 +163,13 @@ fun ZenHome(
                     Triple(right + 20.dp, bottom - petHeight - 21.dp, 20)
                 }
                 PetSpot.Bottom -> {
-                    // A long strip along the bottom, stopping short of the "→ control panel" hint.
-                    val start = 180.dp
+                    // A long strip along the bottom, stopping short of the "→ control panel" hint. If the app list
+                    // reaches down that far (TVs with many apps), the strip starts to the right of the list instead.
+                    val top = maxHeight - petHeight - 30.dp
+                    val list = with(density) { listBounds.right.toDp() to listBounds.bottom.toDp() }
+                    val start = if (list.second > top) maxOf(180.dp, list.first + 32.dp) else 180.dp
                     val room = maxWidth - start - 280.dp - spriteWidth
-                    Triple(start, maxHeight - petHeight - 30.dp, (room / px).toInt().coerceAtLeast(0))
+                    Triple(start, top, (room / px).toInt().coerceAtLeast(0))
                 }
             }
             Pet(
@@ -272,3 +290,17 @@ private fun rememberNow(): LocalDateTime {
     }
     return now
 }
+
+/** Fades the top/bottom edge of a scrolling list when there is more to see in that direction. */
+internal fun Modifier.fadeEdges(scroll: ScrollState, edge: androidx.compose.ui.unit.Dp = 48.dp): Modifier = this
+    .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+    .drawWithContent {
+        drawContent()
+        val fade = edge.toPx().coerceAtMost(size.height / 2)
+        if (scroll.canScrollBackward) {
+            drawRect(Brush.verticalGradient(0f to Color.Transparent, fade / size.height to Color.Black), blendMode = BlendMode.DstIn)
+        }
+        if (scroll.canScrollForward) {
+            drawRect(Brush.verticalGradient(1f - fade / size.height to Color.Black, 1f to Color.Transparent), blendMode = BlendMode.DstIn)
+        }
+    }

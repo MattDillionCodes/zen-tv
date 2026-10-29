@@ -23,11 +23,17 @@ raw() { # send raw bytes on a fresh connection, print the HTTP status code (or "
   [[ -n "$reply" ]] && echo "${reply:9:3}" || echo "closed"
 }
 
-echo "Opening the control panel…"
+echo "Opening Zen's control panel…"
 tv logcat -c
-tv shell input keyevent KEYCODE_HOME; sleep 2
-tv shell input keyevent KEYCODE_DPAD_RIGHT; sleep 2
-url=$(tv logcat -d -s Zen | grep -o 'http://[^ ]*' | tail -n 1)
+# Open Zen directly (it may not be the home app on this TV), then press → until the server says it's up.
+tv shell am start -n com.zen.tv/.MainActivity >/dev/null 2>&1
+url=""
+for attempt in 1 2 3 4 5 6; do
+  sleep 3
+  url=$(tv logcat -d -s Zen | grep -o 'http://[^ ]*' | tail -n 1)
+  [[ -n "$url" ]] && break
+  tv shell input keyevent KEYCODE_DPAD_RIGHT
+done
 if [[ -z "$url" ]]; then echo "No upload link in logcat: is a debug build of Zen on screen?"; exit 1; fi
 token=${url##*t=}
 port=$(sed -E 's#http://[^:]+:([0-9]+)/.*#\1#' <<<"$url")

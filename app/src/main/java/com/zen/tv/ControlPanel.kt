@@ -83,7 +83,8 @@ fun ControlPanel(
         Section("Your wallpaper")
         UploadCard(uploadUrl)
 
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 36.dp)) {
+        val settingsScroll = rememberScrollState()
+        Column(Modifier.fadeEdges(settingsScroll, edge = 32.dp).verticalScroll(settingsScroll).padding(bottom = 36.dp)) {
             Section("Display")
             PanelRow("Clock", if (prefs.use24h) "24-hour" else "12-hour", Modifier.focusRequester(first)) { prefs.use24h = !prefs.use24h }
             PanelRow("Weather", if (prefs.showWeather) "On" else "Off") { prefs.showWeather = !prefs.showWeather }
