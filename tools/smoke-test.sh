@@ -26,7 +26,7 @@ raw() { # send raw bytes on a fresh connection, print the HTTP status code (or "
 echo "Opening Zen's control panel…"
 tv logcat -c
 # Open Zen directly (it may not be the home app on this TV), then press → until the server says it's up.
-tv shell am start -n com.zen.tv/.MainActivity >/dev/null 2>&1
+tv shell am start -n io.github.mattdillioncodes.zen/com.zen.tv.MainActivity >/dev/null 2>&1
 url=""
 for attempt in 1 2 3 4 5 6; do
   sleep 3

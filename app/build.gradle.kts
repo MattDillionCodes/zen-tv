@@ -19,7 +19,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.zen.tv"
+        applicationId = "io.github.mattdillioncodes.zen"
         minSdk = 28 // Android TV 9+
         targetSdk = 35
         versionCode = 1

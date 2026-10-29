@@ -57,7 +57,7 @@ APK=$(ls -t app/build*/outputs/apk/release/app-release.apk | head -n 1)   # buil
 tv install -r "$APK"
 tv shell cmd role add-role-holder android.app.role.HOME com.zen.tv 0
 
-if [[ "$(home_activity)" != com.zen.tv/* ]]; then
+if [[ "$(home_activity)" != io.github.mattdillioncodes.zen/* ]]; then
   echo "Your TV's own launcher ($(home_activity)) still takes priority over Zen."
   answer=n
   if $assume_yes; then answer=y
