@@ -12,6 +12,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+APP_ID=io.github.mattdillioncodes.zen   # must match applicationId in app/build.gradle.kts
 STOCK_LAUNCHERS=(com.google.android.apps.tv.launcherx com.google.android.tvlauncher)
 assume_yes=false
 restore=false
@@ -55,9 +56,9 @@ fi
 ./gradlew --quiet assembleRelease
 APK=$(ls -t app/build*/outputs/apk/release/app-release.apk | head -n 1)   # build/ or build.nosync/
 tv install -r "$APK"
-tv shell cmd role add-role-holder android.app.role.HOME com.zen.tv 0
+tv shell cmd role add-role-holder android.app.role.HOME "$APP_ID" 0
 
-if [[ "$(home_activity)" != io.github.mattdillioncodes.zen/* ]]; then
+if [[ "$(home_activity)" != "$APP_ID"/* ]]; then
   echo "Your TV's own launcher ($(home_activity)) still takes priority over Zen."
   answer=n
   if $assume_yes; then answer=y

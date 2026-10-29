@@ -10,6 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 device="${1:-}"
 tv() { adb ${device:+-s "$device"} "$@"; }
+APP_ID=io.github.mattdillioncodes.zen   # must match applicationId in app/build.gradle.kts
 LOCAL_PORT=18089
 fails=0
 
@@ -26,7 +27,7 @@ raw() { # send raw bytes on a fresh connection, print the HTTP status code (or "
 echo "Opening Zen's control panel…"
 tv logcat -c
 # Open Zen directly (it may not be the home app on this TV), then press → until the server says it's up.
-tv shell am start -n io.github.mattdillioncodes.zen/com.zen.tv.MainActivity >/dev/null 2>&1
+tv shell am start -n "$APP_ID/com.zen.tv.MainActivity" >/dev/null 2>&1
 url=""
 for attempt in 1 2 3 4 5 6; do
   sleep 3
@@ -39,7 +40,8 @@ token=${url##*t=}
 port=$(sed -E 's#http://[^:]+:([0-9]+)/.*#\1#' <<<"$url")
 tv forward "tcp:$LOCAL_PORT" "tcp:$port" >/dev/null
 base="http://localhost:$LOCAL_PORT"
-pid_before=$(tv shell pidof com.zen.tv | tr -d '\r')
+pid_before=$(tv shell pidof "$APP_ID" | tr -d '\r')
+[[ -n "$pid_before" ]] || { echo "Zen ($APP_ID) isn't running on the device."; exit 1; }
 work=$(mktemp -d)
 sips -s format png app/src/main/assets/wallpapers/01-enso.jpg --out "$work/photo.png" >/dev/null
 sips -z 5000 1000 app/src/main/assets/wallpapers/01-enso.jpg --out "$work/tall.jpg" >/dev/null
@@ -66,12 +68,12 @@ check 431 "$(raw "$many\r\n")" "too many headers with the code"
 for i in 1 2 3 4 5 6; do ( { sleep 14; } | nc localhost "$LOCAL_PORT" >/dev/null 2>&1 & ); done
 sleep 12   # idle connections hold the slots until the 10 s header limit drops them
 check 200 "$(status "$base/?t=$token")" "server recovers after idle connections time out"
-check "$pid_before" "$(tv shell pidof com.zen.tv | tr -d '\r')" "Zen never crashed (same process)"
+check "$pid_before" "$(tv shell pidof "$APP_ID" | tr -d '\r')" "Zen never crashed (same process)"
 
 echo "Cleanup"
 tv shell input keyevent KEYCODE_DPAD_LEFT
-newest=$(tv shell run-as com.zen.tv ls -t files/wallpapers 2>/dev/null | tr -d '\r' | grep '^wp_' | head -n 1)
-[[ -n "$newest" ]] && tv shell run-as com.zen.tv rm "files/wallpapers/$newest" && echo "  removed test upload $newest"
+newest=$(tv shell run-as "$APP_ID" ls -t files/wallpapers 2>/dev/null | tr -d '\r' | grep '^wp_' | head -n 1)
+[[ -n "$newest" ]] && tv shell run-as "$APP_ID" rm "files/wallpapers/$newest" && echo "  removed test upload $newest"
 tv forward --remove "tcp:$LOCAL_PORT" >/dev/null 2>&1
 rm -r "$work"
 
