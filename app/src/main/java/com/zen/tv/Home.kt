@@ -229,7 +229,7 @@ private fun InfoLine(prefs: ZenPrefs, modifier: Modifier = Modifier) {
         add(date)
         weather?.takeIf { prefs.showWeather }?.let { w ->
             add(listOf(w.temperature(prefs.fahrenheit), w.summary).filter { it.isNotEmpty() }.joinToString(" "))
-            if (w.place.isNotEmpty()) add(w.place)
+            if (prefs.showCity && w.place.isNotEmpty()) add(w.place)
         }
     }
     Text(parts.joinToString("   ·   "), color = Muted, fontSize = 18.sp, modifier = modifier.padding(start = 6.dp))

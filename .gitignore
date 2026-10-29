@@ -17,3 +17,6 @@ keystore.properties
 
 # Development captures; curated images live in docs/images/
 screenshots/
+
+# Raw footage behind the website assets
+marketing/raw/

@@ -14,6 +14,8 @@ class ZenPrefs(context: Context) {
 
     var use24h by Pref(sp, "use24h", false, SharedPreferences::getBoolean, SharedPreferences.Editor::putBoolean)
     var showWeather by Pref(sp, "showWeather", true, SharedPreferences::getBoolean, SharedPreferences.Editor::putBoolean)
+    /** Off keeps your city off screen (handy for screenshots or streaming); the weather itself still shows. */
+    var showCity by Pref(sp, "showCity", true, SharedPreferences::getBoolean, SharedPreferences.Editor::putBoolean)
     var fahrenheit by Pref(sp, "fahrenheit", false, SharedPreferences::getBoolean, SharedPreferences.Editor::putBoolean)
     /** File name inside the wallpapers dir, or "" for plain OLED black. */
     var wallpaper by Pref(sp, "wallpaper", "", { k, d -> getString(k, d) ?: d }, SharedPreferences.Editor::putString)

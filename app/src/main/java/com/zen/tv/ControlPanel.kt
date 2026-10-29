@@ -88,6 +88,7 @@ fun ControlPanel(
             Section("Display")
             PanelRow("Clock", if (prefs.use24h) "24-hour" else "12-hour", Modifier.focusRequester(first)) { prefs.use24h = !prefs.use24h }
             PanelRow("Weather", if (prefs.showWeather) "On" else "Off") { prefs.showWeather = !prefs.showWeather }
+            if (prefs.showWeather) PanelRow("City", if (prefs.showCity) "Shown" else "Hidden") { prefs.showCity = !prefs.showCity }
             PanelRow("Units", if (prefs.fahrenheit) "°F" else "°C") { prefs.fahrenheit = !prefs.fahrenheit }
             val pet = PetKind.from(prefs.pet)
             PanelRow("Pet", pet.label) { prefs.pet = pet.next().name.lowercase() }

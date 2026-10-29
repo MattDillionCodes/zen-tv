@@ -17,8 +17,8 @@ scanning a QR code with your phone, and keep a tiny 8-bit cat or dog company in 
 - **A little pet** (cat, dog or off) that strolls, sits, grooms, stretches, yawns, plays with a butterfly
   or ball, looks at you when it's done, watches the app list while you browse, and naps when you're away.
   Choose where it lives: beside the weather, by the clock, or along the bottom.
-- **Control panel** (press → on the home screen): clock format, weather, units, pet, pet spot, wallpaper,
-  dim level, and show/hide for every app.
+- **Control panel** (press → on the home screen): clock format, weather, show or hide your city, units, pet,
+  pet spot, wallpaper, dim level, and show/hide for every app.
 
 | Control panel | Your wallpaper, from your phone | Built-in wallpapers |
 |---|---|---|
