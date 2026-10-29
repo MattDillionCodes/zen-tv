@@ -9,14 +9,25 @@ local.properties
 keystore.properties
 *.jks
 *.keystore
+*.p12
+*.pem
+.env
+.env.*
+google-services.json
+
+# Built apps (publish these as GitHub Releases, not in the repo)
+*.apk
+*.aab
 
 # IDE / OS
 .idea/
+.vscode/
 *.iml
+captures/
 .DS_Store
 
 # Development captures; curated images live in docs/images/
 screenshots/
 
-# Raw footage behind the website assets
-marketing/raw/
+# Website assets and the raw footage behind them (kept locally)
+marketing/
